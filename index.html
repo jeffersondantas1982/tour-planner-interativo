@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monte Seu Passeio - Agência Santo Amaro Lençóis</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+    <header>
+        <div class="developer-highlight">
+            <p>Projeto desenvolvido na Imersão Dev com Google Gemini 10ª Edição</p>
+            <p>Aluno: Jefferson Carvalho Dantas</p>
+        </div>
+
+
+    </header>
+
+
+
+    <section class="hero-section">
+        <h2>Monte Seu Roteiro Personalizado</h2>
+        <p>Selecione os passeios e transfers desejados e receba um orçamento estimado, exclusivo por WhatsApp.</p>
+        
+    </section>
+
+    <div class="container">
+        <div id="alert-message"></div>
+
+        <section id="search-bar-section">
+            <label for="tour-search">
+                <i class="fas fa-search"></i>
+                Pesquisar Passeios e Transfers
+            </label>
+            <input type="text" id="tour-search" placeholder="Digite parte do nome do passeio..." autocomplete="off">
+        </section>
+        <section id="coletivos">
+            <h2>Passeios Coletivos</h2>
+            <div class="grid-container" id="coletivos-grid">
+                </div>
+        </section>
+
+        <section id="privativos">
+            <h2>Passeios Privativos</h2>
+            <div class="grid-container" id="privativos-grid">
+                </div>
+        </section>
+
+        <section id="transfers">
+            <h2>Serviços de Transfers</h2>
+            <div class="grid-container" id="transfer-grid">
+                </div>
+        </section>
+
+        <section class="summary-section">
+            <h2>Seu Carrinho de Passeios</h2>
+            <ul id="selected-items">
+                </ul>
+            <p id="empty-cart-message">Seu carrinho está vazio. Selecione alguns passeios ou transfers acima para começar!</p>
+            
+            <div class="summary-total">
+                Total Estimado: <span id="summary-total-price">Aguardando Orçamento</span>
+            </div>
+
+            <a href="#" class="whatsapp-button-bottom" onclick="sendToWhatsApp(); return false;">
+                <i class="fab fa-whatsapp"></i> Enviar Orçamento via WhatsApp
+            </a>
+        </section>
+    </div>
+
+    <div class="floating-cart-summary" id="floating-cart-summary">
+        <h3>Total: <span id="floating-total-price">Aguardando Orçamento</span></h3>
+    </div>
+
+    <button id="back-to-top" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="montar_passeio.js"></script>
+    
+    <script>
+        // Lógica para o botão "Voltar ao Topo"
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) { 
+                backToTopButton.classList.add('show');
+            } else {
+                backToTopButton.classList.remove('show');
+            }
+        });
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // --- Lógica de Destaque Dinâmico para Avaliadores (JS) ---
+        const highlightDiv = document.querySelector('.developer-highlight');
+        const highlightPs = highlightDiv ? highlightDiv.querySelectorAll('p') : [];
+        // Paleta de cores vibrantes para o ciclo
+        const colors = ['#3498db', '#9b59b6', '#f39c12', '#e74c3c', '#1abc9c', '#2ecc71'];
+        let colorIndex = 0;
+
+        function cycleHighlightColor() {
+            if (highlightPs.length === 0 || !highlightDiv) return;
+
+            const currentColor = colors[colorIndex];
+            
+            // Aplica a cor e o efeito neon ao texto
+            highlightPs.forEach(p => {
+                p.style.textShadow = `0 0 5px ${currentColor}, 0 0 10px ${currentColor}, 0 0 20px ${currentColor}`;
+                p.style.color = currentColor;
+            });
+
+            // Altera a cor da borda e sombra do contêiner
+            highlightDiv.style.borderColor = currentColor;
+            highlightDiv.style.boxShadow = `0 0 15px ${currentColor}`;
+
+            // Passa para a próxima cor no ciclo
+            colorIndex = (colorIndex + 1) % colors.length;
+        }
+
+        // Inicia o ciclo de cores a cada 1.5 segundos
+        if (highlightDiv) {
+             setInterval(cycleHighlightColor, 1500); 
+        }
+        // --- Fim da Lógica de Destaque Dinâmico ---
+
+
+        // --- LÓGICA DE PESQUISA DE PASSEIOS ---
+        const searchInput = document.getElementById('tour-search');
+
+        // Função para mostrar/esconder as seções que estão vazias após o filtro
+        function updateSectionVisibility(searchTerm) {
+            const sections = document.querySelectorAll('#coletivos, #privativos, #transfers');
+            const sectionsMap = {
+                'coletivos': document.getElementById('coletivos'),
+                'privativos': document.getElementById('privativos'),
+                'transfers': document.getElementById('transfers')
+            };
+
+            sections.forEach(section => {
+                const gridId = section.querySelector('.grid-container').id;
+                // Conta apenas os cards que estão visíveis (não têm 'display: none')
+                const visibleCards = section.querySelectorAll('.card:not([style*="display: none"])').length;
+                
+                // Se não há termo de pesquisa (caixa vazia) OU há cards visíveis, mostra a seção
+                if (searchTerm === '' || visibleCards > 0) {
+                    section.style.display = 'block'; 
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+        
+        // Adiciona um listener para o evento de digitação (input)
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const allCards = document.querySelectorAll('.card'); 
+
+            allCards.forEach(card => {
+                // Pega o texto do título do card (h3) para pesquisa
+                const cardTitleElement = card.querySelector('h3');
+                const cardTitle = cardTitleElement ? cardTitleElement.textContent.toLowerCase() : '';
+                
+                if (cardTitle.includes(searchTerm)) {
+                    card.style.display = 'flex'; // Mostra o card
+                } else {
+                    card.style.display = 'none'; // Esconde o card
+                }
+            });
+            
+            // Atualiza a visibilidade das seções após o filtro
+            updateSectionVisibility(searchTerm);
+        });
+        // --- FIM DA LÓGICA DE PESQUISA ---
+    </script>
+</body>
+</html>

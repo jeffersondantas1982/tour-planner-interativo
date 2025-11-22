@@ -13,6 +13,7 @@ body {
 
 header {
     background-color: rgba(44, 62, 80, 0.9); /* Azul marinho com transparência (MANTIDO para o destaque) */
+    background-image: url ('topo.jpg');
     padding: 30px 20px;
     text-align: center;
     color: #fff;
@@ -621,5 +622,6 @@ footer p {
     #tour-search { width: 100%; }
 
 }
+
 
 

@@ -60,7 +60,7 @@ header p {
 }
 
 .hero-section {
-    background-image: url('img/topo.jpg'); /* Verifique o caminho da sua imagem de topo */
+    background-image: url('topo.jpg'); /* Verifique o caminho da sua imagem de topo */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -621,4 +621,5 @@ footer p {
     #tour-search { width: 100%; }
 
 }
+
 
